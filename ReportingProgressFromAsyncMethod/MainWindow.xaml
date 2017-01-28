@@ -9,6 +9,7 @@
         Height="350"
         Width="525"
         DataContext="{Binding Source={StaticResource Locator}, Path=Main}">
+    
     <Window.Resources>
         <Style x:Key="Button_Style"
                TargetType="Button">
@@ -36,6 +37,7 @@
                     Value="#FFE43109" />
         </Style>
     </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -43,23 +45,27 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+
         <!--Main Menu-->
         <Menu>
             <MenuItem Header="_File">
-                <MenuItem Header="E_xit" />
+                <MenuItem Header="E_xit"
+                          Command="{Binding ExitCommand}" />
             </MenuItem>
         </Menu>
-        
+
         <!--Heading-->
         <StackPanel Grid.Row="1"
-            Orientation="Horizontal"
+                    Orientation="Horizontal"
                     HorizontalAlignment="Center">
             <!--Start Button-->
             <Button Content="_Start"
-                    Style="{StaticResource Start_Button_Style}" />
+                    Style="{StaticResource Start_Button_Style}"
+                    Command="{Binding StartCommand}" />
             <!--Cancel Button-->
             <Button Content="_Cancel"
-                    Style="{StaticResource Cancel_Button_Style}" />
+                    Style="{StaticResource Cancel_Button_Style}"
+                    Command="{Binding CancelCommand}" />
         </StackPanel>
 
         <!--Output-->
@@ -74,11 +80,11 @@
             </Grid.ColumnDefinitions>
             <ProgressBar Height="15"
                          Margin="3"
-                         Value="0" />
+                         Value="{Binding ProgressPercent}" />
             <TextBlock Grid.Column="1"
                        HorizontalAlignment="Right"
                        Margin="3"
-                       Text="0 of X" />
+                       Text="{Binding ProgressText}" />
         </Grid>
     </Grid>
 </Window>
