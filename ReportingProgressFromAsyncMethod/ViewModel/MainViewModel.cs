@@ -12,6 +12,11 @@ namespace ReportingProgressFromAsyncMethod.ViewModel
     public class MainViewModel : ViewModelBase
     {
         /// <summary>
+        /// The CancellationTokenSource used to create the cancellation token
+        /// </summary>
+        CancellationTokenSource _Cts;
+
+        /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
         public MainViewModel()
@@ -20,6 +25,9 @@ namespace ReportingProgressFromAsyncMethod.ViewModel
 
         private bool _IsBusy;
 
+        /// <summary>
+        /// Gets or sets IsBusy
+        /// </summary>
         public bool IsBusy
         {
             get { return _IsBusy; }
@@ -33,8 +41,29 @@ namespace ReportingProgressFromAsyncMethod.ViewModel
             }
         }
 
+        private string _OutputText;
+
+        /// <summary>
+        /// Gets or sets the OutputText
+        /// </summary>
+        public string OutputText
+        {
+            get { return _OutputText; }
+            set
+            {
+                if (_OutputText != value)
+                {
+                    _OutputText = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         private int _ProgressPercent;
 
+        /// <summary>
+        /// Gets or sets the ProgressPercent
+        /// </summary>
         public int ProgressPercent
         {
             get { return _ProgressPercent; }
@@ -50,6 +79,9 @@ namespace ReportingProgressFromAsyncMethod.ViewModel
 
         private string _ProgressText;
 
+        /// <summary>
+        /// Gets or sets the ProgressText
+        /// </summary>
         public string ProgressText
         {
             get { return _ProgressText; }
@@ -67,43 +99,73 @@ namespace ReportingProgressFromAsyncMethod.ViewModel
 
         private void DoCancel()
         {
-            //
+            _Cts.Cancel();
         }
 
         private async void DoStart()
         {
-            var progress = new Progress<Progress>(ReportProgress);
-            await DoLongRunningProcess(progress);
+            // Create the ProgresStatus object
+            var progressStatus = new Progress<ProgressStatus>(ReportProgress);
+            // Crete a new CancellationTokenSource
+            _Cts = new CancellationTokenSource();
+
+            try
+            {
+                IsBusy = true;
+                OutputText = "Working...";
+                await DoLongRunningProcess(progressStatus, _Cts.Token);
+                OutputText = "Process completed";
+            }
+            catch (OperationCanceledException ex)
+            {
+                OutputText = "Process canceled by user";
+            }
+            finally
+            {
+                // Reset everything
+                IsBusy = false;
+                ProgressPercent = 0;
+                ProgressText = string.Empty;
+                // The buttons don't change state when done unless you do this
+                CommandManager.InvalidateRequerySuggested();
+            }
         }
 
-        private async Task DoLongRunningProcess(IProgress<Progress> progress)
+        private async Task DoLongRunningProcess(IProgress<ProgressStatus> progress, CancellationToken ct)
         {
             List<int> values = Enumerable.Range(1, 100).ToList();
 
             int total = values.Count;
 
-            await Task.Run(() => {
+            await Task.Run(() =>
+            {
                 if (progress != null)
                 {
-                    int cnt = 0;
-                    foreach(var v in values)
+                    int count = 0;
+                    foreach (var v in values)
                     {
-                        cnt++;
-                        progress.Report(new Progress()
+                        count++;
+
+                        // Report the current progress
+                        progress.Report(new ProgressStatus()
                         {
-                            ProgressPercent = ((cnt * 100 / total)),
-                            ProgressText = $"{cnt} of {total}"
+                            ProgressPercent = ((count * 100 / total)),
+                            ProgressText = $"{count} of {total} ({ProgressPercent} %)"
                         });
+
+                        // Simulate long running process
                         Thread.Sleep(100);
+                        // Has cancel been requested?
+                        ct.ThrowIfCancellationRequested();
                     }
                 }
             });
         }
 
-        private void ReportProgress(Progress progress)
+        private void ReportProgress(ProgressStatus progressStatus)
         {
-            this.ProgressPercent = progress.ProgressPercent;
-            this.ProgressText = progress.ProgressText;
+            this.ProgressPercent = progressStatus.ProgressPercent;
+            this.ProgressText = progressStatus.ProgressText;
         }
 
         #endregion

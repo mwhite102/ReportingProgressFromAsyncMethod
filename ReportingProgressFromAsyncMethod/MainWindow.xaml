@@ -9,10 +9,12 @@
         Height="350"
         Width="525"
         DataContext="{Binding Source={StaticResource Locator}, Path=Main}">
-    
+
     <Window.Resources>
+
+        <!--Base button style-->
         <Style x:Key="Button_Style"
-               TargetType="Button">
+               TargetType="{x:Type Button}">
             <Setter Property="Margin"
                     Value="5" />
             <Setter Property="Height"
@@ -23,21 +25,41 @@
                     Value="White" />
         </Style>
 
+        <!--Start button style-->
         <Style x:Key="Start_Button_Style"
-               TargetType="Button"
+               TargetType="{x:Type Button}"
                BasedOn="{StaticResource Button_Style}">
             <Setter Property="Background"
                     Value="#FF03B603" />
         </Style>
 
+        <!--Cancel button style-->
         <Style x:Key="Cancel_Button_Style"
-               TargetType="Button"
+               TargetType="{x:Type Button}"
                BasedOn="{StaticResource Button_Style}">
             <Setter Property="Background"
                     Value="#FFE43109" />
         </Style>
+
+        <!--ProgressBar style-->
+        <Style TargetType="ProgressBar">
+            <Setter Property="Height"
+                    Value="15" />
+            <Setter Property="Margin"
+                    Value="3" />
+            <Setter Property="Visibility"
+                    Value="Hidden" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsBusy}"
+                             Value="True">
+                    <Setter Property="Visibility"
+                            Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
     </Window.Resources>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -70,19 +92,14 @@
 
         <!--Output-->
         <TextBox Grid.Row="2"
-                 IsReadOnly="True" />
+                 IsReadOnly="True"
+                 Text="{Binding OutputText}"/>
 
         <!--Footer-->
         <Grid Grid.Row="3">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <ProgressBar Height="15"
-                         Margin="3"
-                         Value="{Binding ProgressPercent}" />
+            <ProgressBar Value="{Binding ProgressPercent}" />
             <TextBlock Grid.Column="1"
-                       HorizontalAlignment="Right"
+                       HorizontalAlignment="Center"
                        Margin="3"
                        Text="{Binding ProgressText}" />
         </Grid>
