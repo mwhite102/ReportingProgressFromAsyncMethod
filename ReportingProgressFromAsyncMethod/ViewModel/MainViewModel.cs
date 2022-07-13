@@ -149,7 +149,7 @@ namespace ReportingProgressFromAsyncMethod.ViewModel
                         // Report the current progress
                         progress.Report(new ProgressStatus()
                         {
-                            ProgressPercent = ((count * 100 / total)),
+                            ProgressPercent = Convert.ToInt32(((double)count / total) * 100),
                             ProgressText = $"{count} of {total} ({ProgressPercent} %)"
                         });
 
